@@ -1,6 +1,7 @@
 import Experience from "./components/Experience";
 import ChapterHud from "./components/ChapterHud";
 import LoadingOverlay from "./components/LoadingOverlay";
+import PartnerConstellation from "./components/PartnerConstellation";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         </header>
 
         <ChapterHud />
+        <PartnerConstellation />
       </div>
 
       <LoadingOverlay />

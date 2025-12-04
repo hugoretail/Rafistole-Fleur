@@ -116,6 +116,205 @@ button {
   font-size: 1.05rem;
 }
 
+.constellation-shell {
+  margin-top: 1.5rem;
+  background: $card-bg;
+  border: 1px solid $border-soft;
+  border-radius: $radius-xl;
+  padding: clamp(1.5rem, 3vw, 3rem);
+  backdrop-filter: $blur;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.constellation-head {
+  display: flex;
+  gap: 2rem;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.constellation-lede {
+  color: $text-muted;
+  line-height: 1.6;
+  max-width: 560px;
+}
+
+.constellation-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  color: $text-muted;
+  text-transform: uppercase;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.constellation-panel {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+.dial-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid $border-soft;
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: border 0.2s ease, transform 0.2s ease;
+}
+
+.dial-button:hover {
+  border-color: rgba(255, 255, 255, 0.8);
+  transform: translateY(-2px);
+}
+
+.partner-card {
+  border-radius: $radius-xl;
+  border: 1px solid $border-soft;
+  background: rgba(12, 15, 24, 0.9);
+  padding: clamp(1.25rem, 2vw, 2rem);
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.partner-card-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: $text-muted;
+}
+
+.partner-tagline {
+  color: $text-muted;
+  line-height: 1.5;
+}
+
+.signal-list {
+  list-style: none;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.signal-list li {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.82);
+  padding-left: 1.25rem;
+  position: relative;
+}
+
+.signal-list li::before {
+  content: "✶";
+  position: absolute;
+  left: 0;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.impact-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: $text-muted;
+}
+
+.impact-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.impact-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.partner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.ally-band {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.9rem;
+  color: $text-muted;
+}
+
+.ally-band div {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.ally-band span {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+}
+
+.partner-orbits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.partner-orbit-pill {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  padding: 0.35rem 0.9rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.02);
+  transition: border 0.2s ease, transform 0.2s ease;
+}
+
+.partner-orbit-pill[data-active="true"] {
+  border-color: rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+}
+
+.orbit-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.orbit-name {
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .chapter-grid {
   display: flex;
   gap: 0.75rem;
@@ -195,5 +394,22 @@ button {
   .hero,
   .hud-card {
     border-radius: 24px;
+  }
+
+  .constellation-head {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .constellation-stats {
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+  }
+
+  .constellation-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .dial-button {
+    width: 100%;
   }
 }

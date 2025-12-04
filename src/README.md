@@ -25,6 +25,7 @@ npm run lint
 - valtio pour le state narratif
 - framer-motion pour les transitions de chapitres
 - Sass pour le style experimental
+- Constellation des partenaires pour mettre en avant les allies NDI 2025
 
 ## Structure rapide
 
@@ -39,3 +40,7 @@ src/
 ## Idee narrative
 
 Chaque chapitre represente une maniere concrete de reduire la dependance numerique: reparer, mutualiser, celebrer. La camera se deplace automatiquement entre les ilots 3D, tandis qu'un HUD invite a declencher les evenements (autopilote ou mode manuel).
+
+## Allies 2025
+
+Le panneau "Constellation des Allies" relie les partenaires (Viveris, Rimini Street, etc.) a leurs engagements 2025. Les filtres par focus permettent de changer le cluster observe, les cartes detaillees affichent les signaux faibles, et les boutons indiquent les actions a lancer ou les allies a combiner.
