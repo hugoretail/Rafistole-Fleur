@@ -14,6 +14,7 @@ function ChapterHud() {
   const snap = useSnapshot(storyState);
   const current = chapters[snap.chapterIndex];
   const progress = ((snap.chapterIndex + 1) / chapters.length) * 100;
+  const autopilotLabel = snap.autopilot ? "Autopilote on" : "Mode manuel";
 
   useEffect(() => {
     if (!snap.autopilot) {
@@ -30,7 +31,7 @@ function ChapterHud() {
         <div className="timeline-bar">
           <span style={{ width: `${progress}%` }} />
         </div>
-        <button className="chapter-pill" onClick={() => nudgeChapter(1)}>
+        <button className="chapter-pill" onClick={() => nudgeChapter(1, { manual: true })}>
           Hop chapitre suivant
         </button>
       </div>
@@ -56,13 +57,21 @@ function ChapterHud() {
               {current.metric}
             </span>
             <button
-              className="chapter-pill"
+              key={`autopilot-${snap.autopilot ? "on" : "off"}`}
+              className="chapter-pill autopilot-toggle"
               style={{ borderColor: current.color }}
+              data-mode={snap.autopilot ? "auto" : "manual"}
+              data-version={snap.interactionVersion}
+              aria-pressed={!snap.autopilot}
               onClick={() => toggleAutopilot()}
             >
-              {snap.autopilot ? "Autopilote on" : "Mode manuel"}
+              {autopilotLabel}
             </button>
-            <button className="chapter-pill" style={{ borderColor: current.color }} onClick={() => nudgeChapter(1)}>
+            <button
+              className="chapter-pill"
+              style={{ borderColor: current.color }}
+              onClick={() => nudgeChapter(1, { manual: true })}
+            >
               {current.action}
             </button>
           </div>
@@ -76,7 +85,7 @@ function ChapterHud() {
             className="chapter-pill"
             data-active={index === snap.chapterIndex}
             style={{ borderColor: index === snap.chapterIndex ? chapter.color : undefined }}
-            onClick={() => setChapter(index)}
+            onClick={() => setChapter(index, { manual: true })}
           >
             {chapter.title}
           </button>

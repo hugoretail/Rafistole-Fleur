@@ -3,14 +3,14 @@ import { useEffect } from "react";
 import { useSnapshot } from "valtio";
 import { partners } from "../content/partners";
 import {
-  cyclePartner,
-  getPartnerById,
-  getVisiblePartners,
-  partnerFilterOptions,
-  partnerState,
-  setActivePartner,
-  setPartnerFocus,
-  togglePinnedPartner,
+    cyclePartner,
+    getPartnerById,
+    getVisiblePartners,
+    partnerFilterOptions,
+    partnerState,
+    setActivePartner,
+    setPartnerFocus,
+    togglePinnedPartner,
 } from "../state/partners";
 
 const cardVariants = {

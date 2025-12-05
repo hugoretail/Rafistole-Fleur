@@ -315,6 +315,150 @@ button {
   text-transform: uppercase;
 }
 
+.snake-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  pointer-events: auto;
+}
+
+.snake-sigil {
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: $radius-xl;
+  padding: 1rem 1.25rem;
+  background: rgba(5, 6, 11, 0.65);
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s ease;
+}
+
+.snake-sigil::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 10%, rgba(255, 255, 255, 0.15), transparent 55%);
+  pointer-events: none;
+}
+
+.snake-sigil[data-active] {
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.glyph-row {
+  display: flex;
+  gap: 0.6rem;
+  font-family: "Space Grotesk", "Archivo", sans-serif;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  z-index: 1;
+  position: relative;
+}
+
+.snake-glyph {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.35);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.snake-glyph[data-lit="true"] {
+  color: $accent-sun;
+  transform: translateY(-2px);
+}
+
+.snake-sigil p {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: $text-muted;
+}
+
+.snake-portal {
+  position: fixed;
+  inset: 0;
+  z-index: 12;
+  background: rgba(2, 3, 8, 0.92);
+  backdrop-filter: blur(12px);
+  display: grid;
+  align-items: flex-start;
+  justify-items: center;
+  padding: clamp(1rem, 4vw, 2.5rem);
+  overflow-y: auto;
+}
+
+.snake-panel {
+  width: min(640px, 100%);
+  max-height: min(90vh, 720px);
+  background: linear-gradient(135deg, rgba(11, 18, 34, 0.85), rgba(31, 12, 42, 0.85));
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: $radius-xl;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  text-align: left;
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.55);
+  overflow-y: auto;
+}
+
+.snake-panel h3 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  margin: 0.75rem 0 1rem;
+}
+
+.snake-panel p {
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.7;
+}
+
+.snake-portal-scene {
+  margin: 1.4rem 0 1.6rem;
+  border-radius: $radius-lg;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  height: clamp(200px, 28vw, 280px);
+  position: relative;
+  background: radial-gradient(circle at top, rgba(141, 227, 106, 0.18), rgba(5, 6, 11, 0.9));
+}
+
+.snake-portal-scene canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+.snake-cta {
+  display: inline-flex;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: linear-gradient(90deg, $accent-moss, $accent-sun);
+  color: #05060b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+
+.snake-dismiss {
+  display: inline-flex;
+  margin-top: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  padding: 0.5rem 1.2rem;
+  cursor: pointer;
+  background: transparent;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.snake-rearm {
+  align-self: flex-start;
+  border: 1px dashed rgba(255, 255, 255, 0.4);
+  border-radius: 999px;
+  padding: 0.4rem 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.05);
+}
+
 .chapter-grid {
   display: flex;
   gap: 0.75rem;
@@ -331,6 +475,32 @@ button {
   cursor: pointer;
   background: rgba(255, 255, 255, 0.04);
   transition: border 0.2s ease, transform 0.2s ease;
+}
+
+.chapter-pill.autopilot-toggle {
+  cursor: pointer !important;
+  border-style: dashed;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.chapter-pill.autopilot-toggle::before {
+  content: "✺";
+  position: absolute;
+  left: 0.6rem;
+  font-size: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.7;
+}
+
+.chapter-pill.autopilot-toggle:hover {
+  border-color: rgba(255, 255, 255, 0.85);
+}
+
+.chapter-pill.autopilot-toggle[data-mode="manual"] {
+  background: rgba(141, 227, 106, 0.15);
+  color: #d7ffd6;
 }
 
 .chapter-pill[data-active="true"] {
@@ -410,6 +580,10 @@ button {
   }
 
   .dial-button {
+    width: 100%;
+  }
+
+  .snake-panel {
     width: 100%;
   }
 }

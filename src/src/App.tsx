@@ -1,5 +1,6 @@
-import Experience from "./components/Experience";
 import ChapterHud from "./components/ChapterHud";
+import Experience from "./components/Experience";
+import HiddenSnakePortal from "./components/HiddenSnakePortal";
 import LoadingOverlay from "./components/LoadingOverlay";
 import PartnerConstellation from "./components/PartnerConstellation";
 
@@ -23,6 +24,7 @@ function App() {
 
         <ChapterHud />
         <PartnerConstellation />
+        <HiddenSnakePortal />
       </div>
 
       <LoadingOverlay />

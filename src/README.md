@@ -44,3 +44,10 @@ Chaque chapitre represente une maniere concrete de reduire la dependance numeriq
 ## Allies 2025
 
 Le panneau "Constellation des Allies" relie les partenaires (Viveris, Rimini Street, etc.) a leurs engagements 2025. Les filtres par focus permettent de changer le cluster observe, les cartes detaillees affichent les signaux faibles, et les boutons indiquent les actions a lancer ou les allies a combiner.
+
+## Defi Hidden Snake
+
+- Methodologie secrete: couper l'autopilote dans le HUD, puis taper FLEUR (lettres sequentielles) en moins de sept secondes.
+- Un portail visuel "Hidden Snake / Mode Lotus" s'ouvre et propose un bouton vers [https://serpentini.mateoguidi.fr](https://serpentini.mateoguidi.fr).
+- Refermez ou relancez le portail depuis la meme zone si besoin.
+- Penser a envoyer un mail a `n2i@autocut.com` avec le lien du site ainsi que la methode d'activation, comme demande par le brief.

@@ -1,17 +1,17 @@
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
-  Float,
-  PerspectiveCamera,
-  Sparkles,
-  Stars,
-  Environment,
-  ContactShadows,
+    ContactShadows,
+    Environment,
+    Float,
+    PerspectiveCamera,
+    Sparkles,
+    Stars,
 } from "@react-three/drei";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Suspense, useMemo, useRef, type FC } from "react";
+import * as THREE from "three";
+import { useSnapshot } from "valtio";
 import { chapters } from "../content/chapters";
 import { storyState } from "../state/story";
-import { useSnapshot } from "valtio";
-import * as THREE from "three";
 
 const anchorSpread = 3.4;
 const cameraAnchors = chapters.map((_, index) => {
