@@ -34,6 +34,7 @@ export type AudioVizState = {
   burst: number;
   peak: number;
   meterLevel: number;
+  hyperLevel: number;
   bands: number[];
   colorHue: number;
   trackId: string;
@@ -52,6 +53,7 @@ const applyCssDynamics = (
   strobe: number,
   strobeSpeed: number,
   beamStrength: number,
+  hyper: number,
 ) => {
   if (typeof document === "undefined") {
     return;
@@ -65,6 +67,7 @@ const applyCssDynamics = (
   root.style.setProperty("--audio-strobe-strength", strobe.toFixed(3));
   root.style.setProperty("--audio-strobe-speed", `${strobeSpeed.toFixed(3)}s`);
   root.style.setProperty("--audio-beam-strength", beamStrength.toFixed(3));
+  root.style.setProperty("--audio-hyper", hyper.toFixed(3));
   const shakeSpeed = Math.max(0.05, 0.42 - burst * 0.35);
   root.style.setProperty("--audio-shake-speed", `${shakeSpeed.toFixed(3)}s`);
   root.style.setProperty("--audio-spectrum-bloom", (0.2 + vivid * 0.8).toFixed(3));
@@ -98,6 +101,7 @@ export const audioVizState = proxy<AudioVizState>({
   burst: 0,
   peak: 0,
   meterLevel: 0,
+  hyperLevel: 0,
   bands: makeEmptyBuckets(),
   colorHue: 210,
   trackId: defaultAudioTrackId,
@@ -116,6 +120,8 @@ let musicSource: MediaElementAudioSourceNode | null = null;
 let noiseTracker = 0.3;
 let peakTracker = 0.4;
 let meterValue = 0;
+let bassTracker = 0.25;
+let bassCeilingTracker = 0.65;
 
 const ensureAudioContext = () => {
   if (typeof window === "undefined") {
@@ -155,8 +161,11 @@ const updateIntensityLoop = () => {
   let maxValue = 0;
   let lows = 0;
   let highs = 0;
+  let bassSum = 0;
+  let bassMax = 0;
   const lowBound = Math.floor(buffer.length * 0.35);
   const highBound = Math.floor(buffer.length * 0.65);
+  const bassBound = Math.max(1, Math.floor(buffer.length * 0.18));
 
   for (let i = 0; i < buffer.length; i += 1) {
     const value = buffer[i];
@@ -170,6 +179,12 @@ const updateIntensityLoop = () => {
     if (i > highBound) {
       highs += value;
     }
+    if (i < bassBound) {
+      bassSum += value;
+      if (value > bassMax) {
+        bassMax = value;
+      }
+    }
   }
 
   const rms = Math.sqrt(sumSquares / Math.max(1, buffer.length)) / 255;
@@ -177,34 +192,64 @@ const updateIntensityLoop = () => {
   const lowAvg = lows / Math.max(1, lowBound);
   const highAvg = highs / Math.max(1, buffer.length - highBound);
   const tilt = Math.max(0, highAvg - lowAvg) / 255;
+  const bassAvg = bassSum / Math.max(1, bassBound) / 255;
+  const bassPeak = bassMax / 255;
 
   noiseTracker = noiseTracker * 0.9 + rms * 0.1;
   peakTracker = peakTracker * 0.88 + peak * 0.12;
+  bassTracker = bassTracker * 0.92 + bassAvg * 0.08;
 
-  const signal = rms * 0.6 + peak * 0.4;
+  const signal = rms * 0.55 + peak * 0.45;
   const isMic = audioVizState.source === "mic";
-  const floorBoost = isMic ? 2.25 : 1.95;
-  const ceilingBoost = isMic ? 1.55 : 1.18;
-  const floor = Math.min(0.9, noiseTracker * floorBoost + (isMic ? 0.04 : 0.02));
-  const ceiling = Math.min(1.45, Math.max(floor + 0.18, peakTracker * ceilingBoost));
-  const normalizedRaw = (signal - floor) / Math.max(0.18, ceiling - floor);
-  const normalized = Math.max(0, normalizedRaw);
-  const eased = Math.min(1, Math.pow(normalized, isMic ? 0.85 : 0.92) * (isMic ? 1 : 0.88));
-  const burstBase = Math.max(0, (peak - floor) / Math.max(0.14, ceiling - floor));
-  const burst = Math.min(1, (burstBase * 0.85 + eased * 0.3) * (isMic ? 1.6 : 1.28));
-  const glitch = Math.min(1, eased * 1.2 + tilt * 0.6);
-  const vivid = Math.min(1, eased * (1.25 + tilt * 0.5));
-  const hue = (210 + tilt * 230 + burst * 75) % 360;
-  const strobe = Math.min(1, 0.1 + burst * 1.1);
-  const strobeSpeed = Math.max(0.07, 0.5 - burst * 0.42);
-  const beamStrength = Math.min(1, burst * 1.05 + eased * 0.25);
+  const baseFloor = isMic ? 0.08 : 0.22;
+  const baseCeiling = isMic ? 0.55 : 0.4;
+  const floor = Math.min(0.95, baseFloor + noiseTracker * (isMic ? 1.8 : 1.2));
+  const ceiling = Math.min(1.35, Math.max(floor + 0.2, baseCeiling + peakTracker * (isMic ? 1.2 : 0.85)));
+  const normalizedRaw = (signal - floor) / Math.max(0.25, ceiling - floor);
+  const normalized = Math.min(1, Math.max(0, normalizedRaw));
+  const eased = Math.min(1, Math.pow(normalized, isMic ? 0.85 : 1.2));
+  const bassFloor = Math.min(0.7, bassTracker * (isMic ? 1.1 : 1.4));
+  const bassHeadroom = Math.max(0.18, 1 - bassFloor);
+  const bassNormalized = Math.max(0, Math.min(1, (bassAvg - bassFloor * 0.7) / bassHeadroom));
+  const bassPunch = Math.min(1, bassNormalized * 1.1 + Math.max(0, bassPeak - bassFloor * 0.5) * 0.95);
+  const burstBase = Math.max(0, (peak - floor * 0.85) / Math.max(0.2, ceiling - floor * 0.7));
+  const burst = Math.min(
+    1,
+    (bassPunch * (isMic ? 0.6 : 1.05) + burstBase * 0.75 + normalized * 0.35) * (isMic ? 1.4 : 1.02),
+  );
+  const glitch = Math.min(1, eased * 1.25 + tilt * 0.65);
+  const vivid = Math.min(1, eased * (1.3 + tilt * 0.7));
+  const hue = (208 + tilt * 250 + burst * 90) % 360;
+  const strobe = Math.min(1, 0.08 + burst * 1.15);
+  const strobeSpeed = Math.max(0.06, 0.52 - burst * 0.45);
+  const beamStrength = Math.min(1, burst * 1.1 + eased * 0.3);
 
-  const meterTarget = Math.min(1, burst * 0.85 + eased * 0.45);
-  const attack = isMic ? 0.5 : 0.58;
-  const release = isMic ? 0.08 : 0.06;
+  const peakEnergy = Math.max(0, peak - floor * 0.8);
+  const peakWindow = Math.max(0.22, ceiling - floor * 0.75);
+  const normalizedBeat = Math.min(1, peakEnergy / peakWindow);
+  let meterTarget: number;
+  let attack: number;
+  let release: number;
+  if (isMic) {
+    meterTarget = Math.pow(normalizedBeat, 0.78);
+    attack = 0.55;
+    release = 0.12;
+  } else {
+    const punchFloor = 0.12;
+    const punchValue = Math.max(0, bassPunch - punchFloor);
+    bassCeilingTracker = Math.max(punchValue, bassCeilingTracker * 0.985);
+    const adaptiveCeiling = Math.max(0.35, bassCeilingTracker * 1.1);
+    const punchRatio = Math.min(1, punchValue / adaptiveCeiling);
+    const groove = Math.min(1, punchRatio * 1.15 + normalized * 0.15 + normalizedBeat * 0.2);
+    meterTarget = Math.pow(groove, 0.68);
+    meterTarget = Math.min(0.985, meterTarget);
+    attack = 0.9;
+    release = 0.26;
+  }
   const delta = meterTarget - meterValue;
   meterValue += delta * (delta > 0 ? attack : release);
   meterValue = Math.min(1, Math.max(0, meterValue));
+  const hyper = Math.min(1, Math.max(0, meterValue - 0.9) / 0.1);
 
   audioVizState.intensity = eased;
   audioVizState.burst = burst;
@@ -212,7 +257,8 @@ const updateIntensityLoop = () => {
   audioVizState.meterLevel = meterValue;
   audioVizState.bands = computeFrequencyBuckets(buffer);
   audioVizState.colorHue = hue;
-  applyCssDynamics(eased, burst, glitch, vivid, hue, strobe, strobeSpeed, beamStrength);
+  audioVizState.hyperLevel = hyper;
+  applyCssDynamics(eased, burst, glitch, vivid, hue, strobe, strobeSpeed, beamStrength, hyper);
   rafId = requestAnimationFrame(updateIntensityLoop);
 };
 
@@ -297,7 +343,10 @@ const resetAnalyser = () => {
   noiseTracker = 0.3;
   peakTracker = 0.4;
   meterValue = 0;
-  applyCssDynamics(0, 0, 0, 0, 210, 0, 0.4, 0);
+  bassTracker = 0.25;
+  bassCeilingTracker = 0.65;
+  audioVizState.hyperLevel = 0;
+  applyCssDynamics(0, 0, 0, 0, 210, 0, 0.4, 0, 0);
 };
 
 const startMicrophone = async () => {
