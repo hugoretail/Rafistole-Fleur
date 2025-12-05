@@ -10,6 +10,7 @@
   --audio-strobe-strength: 0;
   --audio-strobe-speed: 0.4s;
   --audio-spectrum-bloom: 0.2;
+  --audio-beam-strength: 0;
 }
 
 * {
@@ -126,7 +127,7 @@ button {
   display: grid;
   place-items: center;
   pointer-events: none;
-  opacity: calc(0.25 + var(--audio-burst) * 0.8);
+  opacity: calc(0.05 + var(--audio-beam-strength) * 0.95);
 }
 
 .audio-beam-stack span {
@@ -134,8 +135,8 @@ button {
   width: 120%;
   height: 2px;
   background: linear-gradient(90deg, transparent, hsla(var(--audio-hue), 95%, 70%, 0.8), transparent);
-  filter: blur(1px) drop-shadow(0 0 12px hsla(var(--audio-hue), 100%, 70%, 0.7));
-  opacity: 0.6;
+  filter: blur(1px) drop-shadow(0 0 calc(8px + var(--audio-beam-strength) * 18px) hsla(var(--audio-hue), 100%, 70%, 0.7));
+  opacity: calc(0.2 + var(--audio-beam-strength) * 0.8);
   animation: beamSweep var(--audio-strobe-speed) linear infinite;
 }
 
@@ -270,6 +271,10 @@ button {
   gap: 0.4rem;
 }
 
+.audio-meter.mic {
+  margin-top: 0.6rem;
+}
+
 .meter-track {
   width: 100%;
   height: 10px;
@@ -284,6 +289,14 @@ button {
   background: linear-gradient(90deg, #00d2ff, #ffd369);
   border-radius: inherit;
   transition: width 0.1s linear;
+}
+
+.meter-track[data-variant="mic"] {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.meter-track[data-variant="mic"] span {
+  background: linear-gradient(90deg, #ff5f9e, #ffd369);
 }
 
 .meter-caption {

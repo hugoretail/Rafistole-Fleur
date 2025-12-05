@@ -4,13 +4,13 @@ import { useMemo, useState } from "react";
 import { useSnapshot } from "valtio";
 import { audioTracks } from "../media/tracks";
 import {
-    activateAudioViz,
-    audioModes,
-    audioVizState,
-    setAudioTrack,
-    stopAudioViz,
-    toggleAudioSource,
-    type AudioSource,
+  activateAudioViz,
+  audioModes,
+  audioVizState,
+  setAudioTrack,
+  stopAudioViz,
+  toggleAudioSource,
+  type AudioSource,
 } from "../state/audioViz";
 
 const buttonVariant = {
@@ -28,7 +28,9 @@ function AudioVizPanel() {
   const [loadingSource, setLoadingSource] = useState<AudioSource | null>(null);
   const [changingTrack, setChangingTrack] = useState(false);
   const activeMode = audioModes[snap.mode];
-  const levelPercent = Math.round(Math.min(1, snap.burst || snap.intensity) * 100);
+  const meterValue = snap.meterLevel ?? snap.burst ?? 0;
+  const levelPercent = Math.round(Math.min(1, Math.max(0, meterValue)) * 100);
+  const micLevelPercent = Math.round(Math.min(1, snap.peak || 0) * 100);
   const statusLabel = snap.active ? `${sourceLabels[snap.source ?? "mic"].title}` : "Mode desactive";
   const error = snap.lastError;
   const trackList = audioTracks;
@@ -132,6 +134,18 @@ function AudioVizPanel() {
           <span>{levelPercent}%</span>
         </div>
       </div>
+
+      {snap.active && snap.source === "mic" && (
+        <div className="audio-meter mic">
+          <div className="meter-track" data-variant="mic" aria-hidden>
+            <span style={{ width: `${micLevelPercent}%` }} />
+          </div>
+          <div className="meter-caption">
+            <strong>Niveau micro</strong>
+            <span>{micLevelPercent}%</span>
+          </div>
+        </div>
+      )}
 
       {hasTracks && (
         <div className="audio-track-select">
