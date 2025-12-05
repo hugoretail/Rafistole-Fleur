@@ -6,6 +6,10 @@
   --audio-glitch-strength: 0;
   --audio-color-pop: 0;
   --audio-shake-speed: 0.4s;
+  --audio-hue: 210deg;
+  --audio-strobe-strength: 0;
+  --audio-strobe-speed: 0.4s;
+  --audio-spectrum-bloom: 0.2;
 }
 
 * {
@@ -54,13 +58,20 @@ button {
   pointer-events: none;
   mix-blend-mode: screen;
   opacity: 0;
+  overflow: hidden;
+  background: radial-gradient(circle at 20% 20%, rgba(0, 210, 255, 0.05), transparent 55%),
+    radial-gradient(circle at 80% 80%, rgba(255, 62, 143, 0.08), transparent 50%);
 }
 
 .audio-wavefield span {
   flex: 1 1 16%;
   margin: 0 1%;
   border-radius: 999px;
-  background: linear-gradient(180deg, rgba(0, 210, 255, 0.4), rgba(255, 211, 105, 0.2));
+  background: linear-gradient(
+    180deg,
+    hsla(var(--audio-hue), 95%, 70%, 0.45),
+    hsla(var(--audio-hue), 85%, 55%, 0.15)
+  );
   filter: blur(4px);
   transform-origin: center;
   opacity: 0.05;
@@ -89,6 +100,58 @@ button {
 
 .audio-wavefield[data-source="music"] span {
   background: linear-gradient(180deg, rgba(0, 210, 255, 0.6), rgba(255, 62, 143, 0.3));
+}
+
+.audio-nebula-clouds {
+  position: absolute;
+  inset: -15%;
+  filter: blur(25px);
+  opacity: calc(0.3 + var(--audio-intensity) * 0.6);
+  transition: opacity 0.3s ease;
+}
+
+.audio-nebula-clouds i {
+  position: absolute;
+  width: clamp(140px, 10vw, 320px);
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, hsla(var(--audio-hue), 90%, 75%, 0.8), transparent 70%);
+  opacity: 0.7;
+  animation: nebulaPulse calc(var(--audio-strobe-speed) * 2.6) ease-in-out infinite;
+}
+
+.audio-beam-stack {
+  position: absolute;
+  inset: 4%;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  opacity: calc(0.25 + var(--audio-burst) * 0.8);
+}
+
+.audio-beam-stack span {
+  position: absolute;
+  width: 120%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, hsla(var(--audio-hue), 95%, 70%, 0.8), transparent);
+  filter: blur(1px) drop-shadow(0 0 12px hsla(var(--audio-hue), 100%, 70%, 0.7));
+  opacity: 0.6;
+  animation: beamSweep var(--audio-strobe-speed) linear infinite;
+}
+
+.audio-strobe-grid {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: screen;
+  opacity: calc(var(--audio-strobe-strength));
+}
+
+.audio-strobe-grid b {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, hsla(var(--audio-hue), 90%, 72%, 1), transparent 70%);
+  filter: blur(3px);
+  animation: strobePop var(--audio-strobe-speed) steps(2) infinite;
 }
 
 .audio-spectrum {
@@ -122,11 +185,15 @@ button {
   width: 55%;
   min-height: 3%;
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(0, 210, 255, 0.9), rgba(255, 211, 105, 0.7));
+  background: linear-gradient(
+    90deg,
+    hsla(var(--audio-hue), 95%, 70%, 0.95),
+    hsla(calc(var(--audio-hue) + 45deg), 100%, 65%, 0.7)
+  );
   display: block;
   transform-origin: center;
-  animation: spectrumPulse 2.1s ease-in-out infinite;
-  box-shadow: 0 0 12px rgba(0, 210, 255, 0.5);
+  animation: spectrumPulse var(--audio-strobe-speed) ease-in-out infinite;
+  box-shadow: 0 0 calc(20px + var(--audio-spectrum-bloom) * 15px) hsla(var(--audio-hue), 90%, 70%, 0.5);
 }
 
 .ui-layer {
@@ -890,13 +957,54 @@ button {
 
 @keyframes spectrumPulse {
   0% {
-    filter: drop-shadow(0 0 8px rgba(0, 210, 255, 0.2));
+    filter: drop-shadow(0 0 calc(10px + var(--audio-spectrum-bloom) * 10px)
+          hsla(var(--audio-hue), 95%, 70%, 0.35));
   }
   50% {
-    filter: drop-shadow(0 0 20px rgba(255, 139, 216, 0.5));
+    filter: drop-shadow(0 0 calc(30px + var(--audio-spectrum-bloom) * 20px)
+          hsla(calc(var(--audio-hue) + 60deg), 100%, 70%, 0.9));
   }
   100% {
-    filter: drop-shadow(0 0 8px rgba(0, 210, 255, 0.2));
+    filter: drop-shadow(0 0 calc(10px + var(--audio-spectrum-bloom) * 10px)
+          hsla(var(--audio-hue), 95%, 70%, 0.35));
+  }
+}
+
+@keyframes beamSweep {
+  0% {
+    opacity: 0.2;
+    filter: blur(3px);
+  }
+  50% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0.2;
+    filter: blur(3px);
+  }
+}
+
+@keyframes nebulaPulse {
+  0% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes strobePop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.2;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
   }
 }
 

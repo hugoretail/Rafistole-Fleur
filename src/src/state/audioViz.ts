@@ -32,7 +32,9 @@ export type AudioVizState = {
   mode: AudioModeIndex;
   intensity: number;
   burst: number;
+  peak: number;
   bands: number[];
+  colorHue: number;
   trackId: string;
   modeVersion: number;
   lastError: string | null;
@@ -40,7 +42,15 @@ export type AudioVizState = {
 
 const makeEmptyBuckets = () => Array.from({ length: BUCKET_COUNT }, () => 0);
 
-const applyCssDynamics = (intensity: number, burst: number, glitch: number, vivid: number) => {
+const applyCssDynamics = (
+  intensity: number,
+  burst: number,
+  glitch: number,
+  vivid: number,
+  hueDegrees: number,
+  strobe: number,
+  strobeSpeed: number,
+) => {
   if (typeof document === "undefined") {
     return;
   }
@@ -49,8 +59,12 @@ const applyCssDynamics = (intensity: number, burst: number, glitch: number, vivi
   root.style.setProperty("--audio-burst", burst.toFixed(3));
   root.style.setProperty("--audio-glitch-strength", glitch.toFixed(3));
   root.style.setProperty("--audio-color-pop", vivid.toFixed(3));
-  const shakeSpeed = Math.max(0.06, 0.45 - burst * 0.33);
+  root.style.setProperty("--audio-hue", `${hueDegrees.toFixed(1)}deg`);
+  root.style.setProperty("--audio-strobe-strength", strobe.toFixed(3));
+  root.style.setProperty("--audio-strobe-speed", `${strobeSpeed.toFixed(3)}s`);
+  const shakeSpeed = Math.max(0.05, 0.42 - burst * 0.35);
   root.style.setProperty("--audio-shake-speed", `${shakeSpeed.toFixed(3)}s`);
+  root.style.setProperty("--audio-spectrum-bloom", (0.2 + vivid * 0.8).toFixed(3));
 };
 
 const computeFrequencyBuckets = (array: Uint8Array) => {
@@ -79,7 +93,9 @@ export const audioVizState = proxy<AudioVizState>({
   mode: 0,
   intensity: 0,
   burst: 0,
+  peak: 0,
   bands: makeEmptyBuckets(),
+  colorHue: 210,
   trackId: defaultAudioTrackId,
   modeVersion: 0,
   lastError: null,
@@ -93,6 +109,8 @@ let modeTimer: number | null = null;
 let micStream: MediaStream | null = null;
 let musicElement: HTMLAudioElement | null = null;
 let musicSource: MediaElementAudioSourceNode | null = null;
+let noiseTracker = 0.3;
+let peakTracker = 0.4;
 
 const ensureAudioContext = () => {
   if (typeof window === "undefined") {
@@ -127,18 +145,59 @@ const updateIntensityLoop = () => {
   }
   const buffer = dataArray as FrequencyDataArray;
   analyser.getByteFrequencyData(buffer);
-  const avg = buffer.reduce((sum, value) => sum + value, 0) / buffer.length;
-  const normalized = Math.min(1, avg / 160);
-  const sourceBoost = audioVizState.source === "mic" ? 1.7 : 1.25;
-  const boosted = Math.min(1, normalized * sourceBoost);
-  const eased = Math.min(1, Math.pow(boosted, audioVizState.source === "mic" ? 0.7 : 0.85));
-  const burst = Math.min(1, boosted * (audioVizState.source === "mic" ? 1.35 : 1.15));
-  const glitch = Math.min(1, burst * 1.4);
-  const vivid = Math.min(1, burst * (audioVizState.source === "music" ? 1.4 : 1));
+
+  let sumSquares = 0;
+  let maxValue = 0;
+  let lows = 0;
+  let highs = 0;
+  const lowBound = Math.floor(buffer.length * 0.35);
+  const highBound = Math.floor(buffer.length * 0.65);
+
+  for (let i = 0; i < buffer.length; i += 1) {
+    const value = buffer[i];
+    sumSquares += value * value;
+    if (value > maxValue) {
+      maxValue = value;
+    }
+    if (i < lowBound) {
+      lows += value;
+    }
+    if (i > highBound) {
+      highs += value;
+    }
+  }
+
+  const rms = Math.sqrt(sumSquares / Math.max(1, buffer.length)) / 255;
+  const peak = maxValue / 255;
+  const lowAvg = lows / Math.max(1, lowBound);
+  const highAvg = highs / Math.max(1, buffer.length - highBound);
+  const tilt = Math.max(0, highAvg - lowAvg) / 255;
+
+  noiseTracker = noiseTracker * 0.9 + rms * 0.1;
+  peakTracker = peakTracker * 0.88 + peak * 0.12;
+
+  const signal = rms * 0.65 + peak * 0.35;
+  const floorFactor = audioVizState.source === "mic" ? 1.9 : 1.25;
+  const ceilingFactor = audioVizState.source === "mic" ? 1.7 : 1.2;
+  const floor = Math.min(0.8, noiseTracker * floorFactor);
+  const ceiling = Math.min(1.4, Math.max(floor + 0.12, peakTracker * ceilingFactor));
+  const normalizedRaw = (signal - floor) / Math.max(0.12, ceiling - floor);
+  const normalized = Math.min(1, Math.max(0, normalizedRaw));
+  const eased = Math.pow(normalized, audioVizState.source === "mic" ? 0.78 : 0.9);
+  const burstBase = Math.max(0, (peak - floor) / Math.max(0.1, ceiling - floor));
+  const burst = Math.min(1, (burstBase * 0.7 + eased * 0.3) * (audioVizState.source === "mic" ? 1.5 : 1.25));
+  const glitch = Math.min(1, eased * 1.2 + tilt * 0.6);
+  const vivid = Math.min(1, eased * (1.15 + tilt * 0.6));
+  const hue = (212 + tilt * 220 + burst * 60) % 360;
+  const strobe = Math.min(1, 0.15 + burst * 0.95);
+  const strobeSpeed = Math.max(0.08, 0.45 - burst * 0.36);
+
   audioVizState.intensity = eased;
   audioVizState.burst = burst;
+  audioVizState.peak = peak;
   audioVizState.bands = computeFrequencyBuckets(buffer);
-  applyCssDynamics(eased, burst, glitch, vivid);
+  audioVizState.colorHue = hue;
+  applyCssDynamics(eased, burst, glitch, vivid, hue, strobe, strobeSpeed);
   rafId = requestAnimationFrame(updateIntensityLoop);
 };
 
@@ -217,8 +276,12 @@ const resetAnalyser = () => {
   dataArray = null;
   audioVizState.intensity = 0;
   audioVizState.burst = 0;
+  audioVizState.peak = 0;
   audioVizState.bands = makeEmptyBuckets();
-  applyCssDynamics(0, 0, 0, 0);
+  audioVizState.colorHue = 210;
+  noiseTracker = 0.3;
+  peakTracker = 0.4;
+  applyCssDynamics(0, 0, 0, 0, 210, 0, 0.4);
 };
 
 const startMicrophone = async () => {
@@ -229,10 +292,10 @@ const startMicrophone = async () => {
   micStream = stream;
   const ctx = ensureAudioContext();
   const source = ctx.createMediaStreamSource(stream);
-  const silentGain = ctx.createGain();
-  silentGain.gain.value = 0;
-  source.connect(silentGain);
-  initAnalyser(silentGain, { monitor: false });
+  const analyserGain = ctx.createGain();
+  analyserGain.gain.value = 1;
+  source.connect(analyserGain);
+  initAnalyser(analyserGain, { monitor: false });
 };
 
 const switchMode = (next: AudioModeIndex) => {

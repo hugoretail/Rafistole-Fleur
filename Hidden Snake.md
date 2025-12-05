@@ -5,7 +5,7 @@ Guide interne pour activer le mini-jeu cache "Hidden Snake / Mode Lotus" depuis 
 ## Condition prealable
 - Ouvrir le site Rafistole Fleur en production ou en dev (`npm run dev`). N'oubliez pas d'installer les dépendances d'abord ! (`npm install`)
 - Attendre que la scene soit chargee (overlay disparait).
-- Desactiver l'autopilote via le bouton "Autopilote on" dans le HUD des chapitres (il doit afficher "Mode manuel").
+- Desactiver l'autopilote via le bouton "Autopilote on" dans le HUD des chapitres (il doit afficher "Mode manuel"). Si ce n'est pas rafraichi automatiquement, cliquez sur un bouton en-dessous pour rafrachir manuellement.
 
 ### Comment couper l'autopilote ?
 1. Reperez le grand bloc HUD sous le hero (carte translucide avec titre de chapitre).
