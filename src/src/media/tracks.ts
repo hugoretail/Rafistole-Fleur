@@ -29,7 +29,7 @@ export const audioTracks: AudioTrack[] = [
   {
     id: "rightnow",
     title: "Right Now",
-    artist: "NDI House",
+    artist: "NDI Jeans",
     mood: "House glitter",
     url: rightNow,
   },
