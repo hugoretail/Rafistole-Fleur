@@ -51,3 +51,14 @@ Le panneau "Constellation des Allies" relie les partenaires (Viveris, Rimini Str
 - Un portail visuel "Hidden Snake / Mode Lotus" s'ouvre et propose un bouton vers [https://serpentini.mateoguidi.fr](https://serpentini.mateoguidi.fr).
 - Refermez ou relancez le portail depuis la meme zone si besoin.
 - Penser a envoyer un mail a `n2i@autocut.com` avec le lien du site ainsi que la methode d'activation, comme demande par le brief.
+
+## Defi Capgemini — Visualisation Audio
+
+- Deux boutons en haut a droite activent le mode `🎙 Mode micro` (utilise votre micro) ou `♫ Mode musique` (synth retro integre).
+- Une fois actif, les modes tournent toutes les 5 secondes et animent tout le site:
+  - **Mode 1 / Rafistole Quake**: vibrations sur le texte, les cartes et la scene 3D.
+  - **Mode 2 / Flux Glitch**: filtres chromatiques et bruits lumineux couples au spectre audio.
+  - **Mode 3 / Ondes Jukebox**: vagues neon jaillissant des bords, ambiance dancefloor.
+- Le panneau affiche en temps reel la puissance captee (barre d'intensite) et permet d'arreter ou de relancer une source.
+- En mode musique, choisis une piste dans la liste (Cardigan, Real Man, Right Now ou 踊り子) pour changer l'ambiance sans recharger la page.
+- Pour des tests hors evenement, donner l'autorisation micro au navigateur ou rester sur le mode musique qui utilise uniquement l'API Web Audio.

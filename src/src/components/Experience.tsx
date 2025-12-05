@@ -11,6 +11,7 @@ import { Suspense, useMemo, useRef, type FC } from "react";
 import * as THREE from "three";
 import { useSnapshot } from "valtio";
 import { chapters } from "../content/chapters";
+import { audioVizState } from "../state/audioViz";
 import { storyState } from "../state/story";
 
 const anchorSpread = 3.4;
@@ -28,10 +29,18 @@ function CameraRig() {
   const { camera } = useThree();
   const focus = useRef(new THREE.Vector3());
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     const targetAnchor = cameraAnchors[chapterIndex];
     camera.position.lerp(targetAnchor.position, delta * 1.5);
     focus.current.lerp(targetAnchor.target, delta * 1.5);
+    const intensity = audioVizState.burst;
+    if (audioVizState.active) {
+      const wobble = 0.12 + intensity * 0.9;
+      const time = state.clock.getElapsedTime();
+      camera.position.x += Math.sin(time * 8) * wobble * 0.05;
+      camera.position.y += Math.cos(time * 6) * wobble * 0.04;
+      camera.position.z += Math.sin(time * 5) * wobble * 0.03;
+    }
     camera.lookAt(focus.current);
   });
 
@@ -167,12 +176,25 @@ function ChapterClusters() {
 }
 
 function SceneContents() {
+  const pulseLight = useRef<THREE.PointLight>(null);
+  useFrame((state) => {
+    if (!pulseLight.current) {
+      return;
+    }
+    const energy = audioVizState.burst;
+    const wobble = audioVizState.active ? 1 + energy * 3.2 : 1;
+    pulseLight.current.intensity = 0.5 * wobble;
+    pulseLight.current.position.x = Math.sin(state.clock.getElapsedTime() * 1.2) * (2 + energy * 4);
+    pulseLight.current.color.setHSL(0.5 + energy * 0.2, 1, 0.65);
+  });
+
   return (
     <group>
       <color attach="background" args={["#05060b"]} />
       <ambientLight intensity={0.5} />
       <directionalLight position={[5, 8, 4]} intensity={1.2} castShadow />
       <pointLight position={[-6, 4, -2]} intensity={0.8} color="#f96fb0" />
+      <pointLight ref={pulseLight} position={[0, 3, 4]} intensity={0.5} color="#00d2ff" />
       <CameraRig />
       <PerspectiveCamera makeDefault position={[0, 2, 10]} fov={45} />
 

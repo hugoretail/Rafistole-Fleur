@@ -1,5 +1,13 @@
 @use "./variables" as *;
 
+:root {
+  --audio-intensity: 0;
+  --audio-burst: 0;
+  --audio-glitch-strength: 0;
+  --audio-color-pop: 0;
+  --audio-shake-speed: 0.4s;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -37,6 +45,90 @@ button {
   z-index: 0;
 }
 
+.audio-wavefield {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0;
+}
+
+.audio-wavefield span {
+  flex: 1 1 16%;
+  margin: 0 1%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(0, 210, 255, 0.4), rgba(255, 211, 105, 0.2));
+  filter: blur(4px);
+  transform-origin: center;
+  opacity: 0.05;
+}
+
+.audio-wavefield[data-active] span {
+  opacity: calc(0.12 + var(--audio-burst) * 0.6);
+  transform: scaleY(calc(1 + var(--audio-burst) * 2));
+}
+
+.audio-wavefield[data-mode="flux"] span {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(0, 210, 255, 0.2));
+}
+
+.audio-wavefield[data-mode="jukebox"][data-active] span {
+  opacity: calc(0.15 + var(--audio-intensity) * 0.8);
+}
+
+.audio-wavefield[data-mode="jukebox"][data-active] span:nth-child(-n + 3) {
+  animation: jukeboxLeft 4s ease-in-out infinite;
+}
+
+.audio-wavefield[data-mode="jukebox"][data-active] span:nth-child(n + 4) {
+  animation: jukeboxRight 4s ease-in-out infinite;
+}
+
+.audio-wavefield[data-source="music"] span {
+  background: linear-gradient(180deg, rgba(0, 210, 255, 0.6), rgba(255, 62, 143, 0.3));
+}
+
+.audio-spectrum {
+  position: absolute;
+  top: 6%;
+  bottom: 6%;
+  width: clamp(70px, 12vw, 150px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  gap: 0.35rem;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.audio-spectrum--left {
+  left: 0.5rem;
+}
+
+.audio-spectrum--right {
+  right: 0.5rem;
+}
+
+.audio-spectrum[data-active] {
+  opacity: 1;
+}
+
+.audio-spectrum i {
+  width: 55%;
+  min-height: 3%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(0, 210, 255, 0.9), rgba(255, 211, 105, 0.7));
+  display: block;
+  transform-origin: center;
+  animation: spectrumPulse 2.1s ease-in-out infinite;
+  box-shadow: 0 0 12px rgba(0, 210, 255, 0.5);
+}
+
 .ui-layer {
   position: relative;
   z-index: 1;
@@ -46,6 +138,159 @@ button {
   justify-content: space-between;
   padding: clamp(1.5rem, 3vw, 3.5rem);
   pointer-events: none;
+}
+
+.audio-panel {
+  align-self: flex-end;
+  width: min(360px, 100%);
+  background: rgba(7, 10, 18, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: $radius-xl;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  pointer-events: auto;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(24px);
+}
+
+.audio-panel-head h2 {
+  font-family: "Space Grotesk", sans-serif;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.25rem;
+}
+
+.audio-panel-head p {
+  color: $text-muted;
+  line-height: 1.4;
+  font-size: 0.95rem;
+}
+
+.audio-button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.audio-button {
+  flex: 1 1 120px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 0.55rem 0.9rem;
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  transition: border 0.2s ease, transform 0.2s ease, background 0.2s ease;
+}
+
+.audio-button[data-active="true"] {
+  border-color: #00d2ff;
+  background: rgba(0, 210, 255, 0.12);
+  box-shadow: 0 0 24px rgba(0, 210, 255, 0.25);
+}
+
+.audio-button.stop {
+  flex: 0 0 auto;
+  padding-inline: 1.2rem;
+}
+
+.audio-meter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.meter-track {
+  width: 100%;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.meter-track span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #00d2ff, #ffd369);
+  border-radius: inherit;
+  transition: width 0.1s linear;
+}
+
+.meter-caption {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: $text-muted;
+}
+
+.audio-mode-callout {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: $radius-lg;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.audio-mode-callout h3 {
+  font-size: 1rem;
+  margin-bottom: 0.35rem;
+}
+
+.audio-track-select {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.audio-track-select select {
+  width: 100%;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.45rem 0.9rem;
+  background: rgba(5, 6, 11, 0.9);
+  color: $text-light;
+  font-family: "Space Grotesk", sans-serif;
+  letter-spacing: 0.05em;
+}
+
+.track-meta {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.75);
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+.track-meta span {
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.audio-error {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 86, 86, 0.4);
+  background: rgba(255, 86, 86, 0.08);
+  font-size: 0.9rem;
+  color: #ff9f9f;
+}
+
+.audio-error button {
+  margin-top: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.75rem;
+  cursor: pointer;
 }
 
 .hero {
@@ -553,6 +798,130 @@ button {
   display: block;
   font-size: 3rem;
   margin-top: 0.5rem;
+}
+
+/* Audio visualisation global effects */
+.app-shell[data-audio-mode="quake"] :is(
+    .hero,
+    .hud-card,
+    .constellation-shell,
+    .partner-card,
+    .snake-sigil,
+    .partner-orbit-pill,
+    .dial-button,
+    .chapter-pill
+  ) {
+  animation: audio-shake var(--audio-shake-speed) linear infinite;
+  box-shadow: 0 0 40px rgba(0, 210, 255, 0.18);
+}
+
+.app-shell[data-audio-mode="quake"] .canvas-layer canvas {
+  animation: audio-shake calc(var(--audio-shake-speed) * 1.2) linear infinite;
+}
+
+.app-shell[data-audio-mode="flux"] .ui-layer {
+  filter: hue-rotate(calc(var(--audio-color-pop) * 280deg)) saturate(calc(1 + var(--audio-color-pop)));
+  mix-blend-mode: screen;
+}
+
+.app-shell[data-audio-mode="flux"] .ui-layer::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(0, 210, 255, 0.12),
+    rgba(0, 210, 255, 0.12) 2px,
+    transparent 2px,
+    transparent 6px
+  );
+  opacity: calc(var(--audio-glitch-strength) * 0.9);
+  animation: fluxNoise calc(1.5s - var(--audio-glitch-strength) * 0.8s) steps(14) infinite;
+}
+
+.app-shell[data-audio-mode="jukebox"] :is(
+    .hero,
+    .constellation-shell,
+    .snake-sigil,
+    .hud-card
+  ) {
+  border-color: rgba(0, 210, 255, 0.3);
+  box-shadow: 0 0 60px rgba(255, 211, 105, 0.2);
+}
+
+.app-shell[data-audio-mode="jukebox"] .chapter-pill {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 20px rgba(255, 211, 105, calc(var(--audio-burst) * 0.4));
+}
+
+.app-shell[data-audio-source="music"] :is(
+    .hero,
+    .hud-card,
+    .constellation-shell,
+    .snake-sigil,
+    .partner-card
+  ) {
+  border-color: rgba(0, 210, 255, calc(0.15 + var(--audio-burst) * 0.5));
+  box-shadow: 0 0 calc(25px + var(--audio-burst) * 40px) rgba(0, 210, 255, calc(var(--audio-burst) * 0.4));
+}
+
+@keyframes audio-shake {
+  0% {
+    transform: translate3d(calc(var(--audio-intensity) * -6px), calc(var(--audio-intensity) * -4px), 0);
+  }
+  50% {
+    transform: translate3d(calc(var(--audio-intensity) * 5px), calc(var(--audio-intensity) * 4px), 0);
+  }
+  100% {
+    transform: translate3d(calc(var(--audio-intensity) * -3px), calc(var(--audio-intensity) * 5px), 0);
+  }
+}
+
+@keyframes fluxNoise {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes spectrumPulse {
+  0% {
+    filter: drop-shadow(0 0 8px rgba(0, 210, 255, 0.2));
+  }
+  50% {
+    filter: drop-shadow(0 0 20px rgba(255, 139, 216, 0.5));
+  }
+  100% {
+    filter: drop-shadow(0 0 8px rgba(0, 210, 255, 0.2));
+  }
+}
+
+@keyframes jukeboxLeft {
+  0% {
+    transform: translateX(-40%) scaleX(0.6);
+  }
+  50% {
+    transform: translateX(-10%) scaleX(1.1);
+  }
+  100% {
+    transform: translateX(-40%) scaleX(0.6);
+  }
+}
+
+@keyframes jukeboxRight {
+  0% {
+    transform: translateX(40%) scaleX(0.6);
+  }
+  50% {
+    transform: translateX(10%) scaleX(1.1);
+  }
+  100% {
+    transform: translateX(40%) scaleX(0.6);
+  }
 }
 
 @media (max-width: 900px) {
