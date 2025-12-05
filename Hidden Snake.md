@@ -3,7 +3,7 @@
 Guide interne pour activer le mini-jeu cache "Hidden Snake / Mode Lotus" depuis Rafistole Fleur.
 
 ## Condition prealable
-- Ouvrir le site Rafistole Fleur en production ou en dev (`npm run dev`).
+- Ouvrir le site Rafistole Fleur en production ou en dev (`npm run dev`). N'oubliez pas d'installer les dépendances d'abord ! (`npm install`)
 - Attendre que la scene soit chargee (overlay disparait).
 - Desactiver l'autopilote via le bouton "Autopilote on" dans le HUD des chapitres (il doit afficher "Mode manuel").
 
